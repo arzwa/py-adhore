@@ -87,8 +87,9 @@ def of(data_frame, species, gff, features, attributes, outdir):
 @cli.command(context_settings={'help_option_names': ['-h', '--help']})
 @click.argument('segments', nargs=1, type=click.Path(exists=True))
 @click.argument('genesdata', nargs=1)
+@click.option("--js", is_flag=True)
 @click.option('--outdir', '-o', default=None, help='output directory')
-def cc(segments, genesdata, outdir):
+def cc(segments, genesdata, js, outdir):
     """
     Circos visualization of I-ADHoRe results
     """
@@ -100,9 +101,14 @@ def cc(segments, genesdata, outdir):
         logging.warning("Output directory `{}` already exists".format(outdir))
     seg = pd.read_csv(segments, sep="\t", index_col=0)
     gdata = pd.read_csv(genesdata, index_col=0)
-    kt = write_karyotype(gdata, os.path.join(outdir, "karyotype.txt"))
-    ri = write_ribbons(seg, gdata, os.path.join(outdir, "ribbons.txt"))
-    cc = write_circos_conf(kt, ri, os.path.join(outdir, "circos.conf"))
+    if not js:
+        kt = write_karyotype(gdata, os.path.join(outdir, "karyotype.txt"))
+        ri = write_ribbons(seg, gdata, os.path.join(outdir, "ribbons.txt"))
+        cc = write_circos_conf(kt, ri, os.path.join(outdir, "circos.conf"))
+    else:
+        kt, colors = karyotype_to_json(gdata)
+        ri = ribbons_to_json(seg, gdata, chrcolors=colors)
+        get_circosjs_doc(kt, ri, os.path.join(outdir, "circos.html"))
 
 
 if __name__ == '__main__':
