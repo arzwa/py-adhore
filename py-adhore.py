@@ -46,9 +46,11 @@ def cli():
 @click.option('--attributes', '-a', default="ID", show_default=True,
     type=str, help='Attributes to use from gff files for each species,'
     'multiple comma-separated attributes per species allowed.')
+@click.option('--outlier_filter', '-of', default=-1, show_default=True,
+    help='Poisson outlier filtering threshold (< 0: no filtering)')
 @click.option('--outdir', '-o', default='py-adhore.out', show_default=True,
     help='output directory')
-def of(data_frame, species, gff, features, attributes, outdir):
+def of(data_frame, species, gff, features, attributes, outlier_filter, outdir):
     """
     Orthofinder to I-ADHoRE 3.0
     """
@@ -66,8 +68,12 @@ def of(data_frame, species, gff, features, attributes, outdir):
     feat, attr = parse_feat_attr(features, attributes, species)
 
     # write families
-    logging.info("Writing Families file")
+    logging.info("Writing families file")
     df = get_families_orthofinder(data_frame, species)
+    if outlier_filter > 0:
+        logging.info("Filtering Poisson outlier families (> {})".format(
+            outlier_filter))
+        df = orthogroup_poisson_filter(df, threshold=outlier_filter)
     fn = os.path.join(outdir, "families.tsv")
     fn, genes = write_families_from_df(df, fn)
     conf["blast_table"] = fn
@@ -88,8 +94,14 @@ def of(data_frame, species, gff, features, attributes, outdir):
 @click.argument('segments', nargs=1, type=click.Path(exists=True))
 @click.argument('genesdata', nargs=1)
 @click.option("--js", is_flag=True)
+@click.option('--minlen_kt', '-mk', default=5e6, help='Minimum length of '
+    'genomic element')
+@click.option('--minlen_ch', '-mc', default=1e6, help='Minimum length of '
+    'a syntenic block')
+@click.option('--min_order', '-mo', default=2, help='Minimum order of '
+    'a multiplicon')
 @click.option('--outdir', '-o', default=None, help='output directory')
-def cc(segments, genesdata, js, outdir):
+def cc(segments, genesdata, js, minlen_kt, minlen_ch, min_order, outdir):
     """
     Circos visualization of I-ADHoRe results
     """
@@ -100,14 +112,16 @@ def cc(segments, genesdata, js, outdir):
     except FileExistsError:
         logging.warning("Output directory `{}` already exists".format(outdir))
     seg = pd.read_csv(segments, sep="\t", index_col=0)
+    seg = segments_filter(seg, min_order)
     gdata = pd.read_csv(genesdata, index_col=0)
     if not js:
         kt = write_karyotype(gdata, os.path.join(outdir, "karyotype.txt"))
         ri = write_ribbons(seg, gdata, os.path.join(outdir, "ribbons.txt"))
         cc = write_circos_conf(kt, ri, os.path.join(outdir, "circos.conf"))
     else:
-        kt, colors = karyotype_to_json(gdata)
-        ri = ribbons_to_json(seg, gdata, chrcolors=colors)
+        kt = karyotype_to_json(gdata, minlen=minlen_kt)
+        ri = ribbons_to_json(seg, gdata, minlen=minlen_ch)
+        kt = reduce_karyotype(kt, ri)
         get_circosjs_doc(kt, ri, os.path.join(outdir, "circos.html"))
 
 

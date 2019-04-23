@@ -1,1 +1,1 @@
-Utilities for doing and visualizing synteny analyses using I-ADHoRe
+Utilities for doing and visualizing synteny analyses using I-ADHoRe.

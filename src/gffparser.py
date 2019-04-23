@@ -39,7 +39,8 @@ def load_gff(fn, features=["gene"]):
     Uses tempfiles
     """
     with open(fn, "r") as f:
-        lines = [l for l in f.readlines() if l.split()[2] in features]
+        lines = [l for l in f.readlines() if
+            (l[0] != "#" and l.split("\t")[2] in features)]
     gff = tempfile.NamedTemporaryFile(suffix=".gff", mode="w+t")
     gff.write("\n".join(lines))
     gff.seek(0)

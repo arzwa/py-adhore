@@ -62,3 +62,12 @@ def parse_feat_attr(features, attributes, species):
         logging.info(" .. {}: feat. = {}; attr. = {}".format(
             s, feat[i], attr[i]))
     return feat, attr
+
+
+def segments_filter(segments, order=2):
+    """
+    Filter the segments file by order of the multiplicons
+    """
+    s = segments.groupby("multiplicon").count()["genome"]
+    idx = s[s >= order].index
+    return segments[segments["multiplicon"].isin(idx)]
