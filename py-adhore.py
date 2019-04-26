@@ -40,6 +40,7 @@ def cli():
 @click.argument('data_frame', nargs=1, type=click.Path(exists=True))
 @click.argument('species', nargs=1)
 @click.argument('gff', nargs=-1, type=click.Path(exists=True))
+@click.option("--mcl", is_flag=True)
 @click.option('--features', '-f', default="gene", show_default=True,
     type=str, help='Features to use from gff files for each species,'
     'multiple comma-separated features per species allowed.')
@@ -50,9 +51,10 @@ def cli():
     help='Poisson outlier filtering threshold (< 0: no filtering)')
 @click.option('--outdir', '-o', default='py-adhore.out', show_default=True,
     help='output directory')
-def of(data_frame, species, gff, features, attributes, outlier_filter, outdir):
+def of(data_frame, species, mcl, gff, features, attributes, outlier_filter,
+        outdir):
     """
-    Orthofinder to I-ADHoRE 3.0
+    Orthofinder/MCL to I-ADHoRE 3.0
     """
     species = species.split(",")
     if len(species) != len(gff):
@@ -69,13 +71,16 @@ def of(data_frame, species, gff, features, attributes, outlier_filter, outdir):
 
     # write families
     logging.info("Writing families file")
-    df = get_families_orthofinder(data_frame, species)
-    if outlier_filter > 0:
-        logging.info("Filtering Poisson outlier families (> {})".format(
-            outlier_filter))
-        df = orthogroup_poisson_filter(df, threshold=outlier_filter)
     fn = os.path.join(outdir, "families.tsv")
-    fn, genes = write_families_from_df(df, fn)
+    if not mcl:
+        df = get_families_orthofinder(data_frame, species)
+        if outlier_filter > 0:
+            logging.info("Filtering Poisson outlier families (> {})".format(
+                outlier_filter))
+            df = orthogroup_poisson_filter(df, threshold=outlier_filter)
+        fn, genes = write_families_from_df(df, fn)
+    else:
+        fn, genes = write_families_from_mcl(data_frame, fn)
     conf["blast_table"] = fn
 
     # write gene lists
@@ -94,6 +99,7 @@ def of(data_frame, species, gff, features, attributes, outlier_filter, outdir):
 @click.argument('segments', nargs=1, type=click.Path(exists=True))
 @click.argument('genesdata', nargs=1)
 @click.option("--js", is_flag=True)
+@click.option("--all", is_flag=True)
 @click.option('--minlen_kt', '-mk', default=5e6, help='Minimum length of '
     'genomic element')
 @click.option('--minlen_ch', '-mc', default=1e6, help='Minimum length of '
@@ -101,7 +107,7 @@ def of(data_frame, species, gff, features, attributes, outlier_filter, outdir):
 @click.option('--min_order', '-mo', default=2, help='Minimum order of '
     'a multiplicon')
 @click.option('--outdir', '-o', default=None, help='output directory')
-def cc(segments, genesdata, js, minlen_kt, minlen_ch, min_order, outdir):
+def cc(segments, genesdata, all, js, minlen_kt, minlen_ch, min_order, outdir):
     """
     Circos visualization of I-ADHoRe results
     """
@@ -121,7 +127,7 @@ def cc(segments, genesdata, js, minlen_kt, minlen_ch, min_order, outdir):
     else:
         kt = karyotype_to_json(gdata, minlen=minlen_kt)
         ri = ribbons_to_json(seg, gdata, minlen=minlen_ch)
-        kt = reduce_karyotype(kt, ri)
+        if not all: kt = reduce_karyotype(kt, ri)
         get_circosjs_doc(kt, ri, os.path.join(outdir, "circos.html"))
 
 

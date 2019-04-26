@@ -107,7 +107,7 @@ def karyotype_to_json(gdata, minlen=5000000):
     json_list = []
     df = gdata.groupby(["chrom"])[["stop", "sp"]].max()
     df = df[df["stop"] > minlen]
-    df = df.sort_values("sp")
+    df = df.sort_values(["sp", "stop"], ascending=False)
     colors = get_colors(list(df["sp"].unique()))
     chrcolors = {}
     for chr in df.index:
@@ -118,8 +118,8 @@ def karyotype_to_json(gdata, minlen=5000000):
 
 
 def nice_colors():
-    return ['#4363d8', '#f58231', '#e6194b', '#fffac8', '#800000',
-        '#aaffc3','#3cb44b', '#ffe119', '#911eb4', '#46f0f0', '#f032e6',
+    return ['#5D8AA8', '#FE6F5E', '#177245', '#B22222', '#4F7942',
+        '#86608E','#FCC200', '#ffe119', '#911eb4', '#46f0f0', '#f032e6',
         '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324',  '#808000',
         '#ffd8b1', '#000075', '#808080']
 
@@ -130,22 +130,18 @@ def get_colors(species):
 
 
 def get_chord_colors(species):
-    colors = {}
+    cols = {}
     ns = len(species)
     species = sorted(species)
     cvals = nice_colors()
-    c = 1
+    for i, sp in enumerate(species):
+        cols["{}_{}".format(sp, sp)] = i
+    c = len(species)
     for i in range(ns):
-        for j in range(i, ns):
-            colors["_".join(sorted([species[i],species[j]]))] = c
+        for j in range(i+1, ns):
+            cols["_".join(sorted([species[i],species[j]]))] = c
             c += 1
-        #si = species[i]
-        #colors["_".join(sorted([si,si]))] = chrcolors[si]
-        #for j in range(i+1, ns):
-            #colors["_".join(sorted([si,species[j]]))] = cvals[ns*(i+1)+(j-i-1)]
-    for k in colors.keys():
-        colors[k] = colors[k] / ns
-    return colors
+    return cols
 
 
 def get_circosjs_doc(karyotype, ribbons, fname):
@@ -155,6 +151,11 @@ def get_circosjs_doc(karyotype, ribbons, fname):
 
 def get_circosjs(karyotype, ribbons):
     js = """
+    var thecolors= ['#5D8AA8', '#FE6F5E', '#177245', '#B22222', '#4F7942',
+        '#86608E','#FCC200', '#ffe119', '#911eb4', '#46f0f0', '#f032e6',
+        '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324',  '#808000',
+        '#ffd8b1', '#000075', '#808080']
+
     var myCircos = new Circos({
         container: '#chart',
         width: 1500,
@@ -162,12 +163,12 @@ def get_circosjs(karyotype, ribbons):
     });
 
     var configuration = {
-        innerRadius: 720,
-        outerRadius: 750,
+        innerRadius: 500,
+        outerRadius: 520,
         cornerRadius: 0,
         gap: 0.01, // in radian
         labels: {
-            display: true,
+            display: false,
             position: 'center',
             size: '14',
             color: '#000000',
@@ -194,11 +195,14 @@ def get_circosjs(karyotype, ribbons):
         events: {}
     }
     """
-    chord_conf = {'color': 'Spectral', 'opacity': 0.4}
+    colorconf = "{'color': function(datum, index) { return thecolors[datum.value] }, opacity: 0.5}"
+    #colorconf = "{'color:' 'Spectral', 'opacity': 0.75}"
+    #chord_conf = {'color': colorfun, 'opacity': 0.75}
+    #chord_conf = {'color': 'Spectral', 'opacity': 0.75}
     js += "\nvar layout_data = " + str(karyotype)
     js += "\nmyCircos.layout(layout_data, configuration);"
     js += "\nmyCircos.chords('synteny', {}, {});".format(
-        str(ribbons), str(chord_conf))
+        str(ribbons), str(colorconf))
     js += "\nmyCircos.render();"
     return js
 

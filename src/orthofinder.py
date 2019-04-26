@@ -61,6 +61,18 @@ def write_families_from_df(df, fname):
     return os.path.abspath(fname), set(genes)
 
 
+def write_families_from_mcl(df, fname):
+    genes = []
+    with open(fname, "w") as o:
+        with open(df, "r") as f:
+            for i, l in enumerate(f.readlines()):
+                gs = l.strip().split()
+                strs = ["{}\t{}\n".format(g, i) for g in gs]
+                o.write("".join(strs))
+                genes += gs
+    return os.path.abspath(fname), set(genes)
+
+
 def unique_prefix(strs, prefixes):
     f = lambda x, y: x.startswith(y)
     for y in prefixes:
