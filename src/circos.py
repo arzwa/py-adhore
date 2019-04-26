@@ -6,7 +6,7 @@ import random
 pd.set_option('mode.chained_assignment', None)
 
 
-def write_karyotype(gdata, fname):
+def write_karyotype_circos(gdata, fname):
     colors = ["green", "blue", "orange"]
     df = gdata.groupby(["chrom"])[["stop", "sp"]].max()
     df["start"] = 0
@@ -144,9 +144,18 @@ def get_chord_colors(species):
     return cols
 
 
-def get_circosjs_doc(karyotype, ribbons, fname):
+def get_circosjs_doc(karyotype, ribbons, fname, pars):
+    info = "Based on {0} and {1}".format(pars[-2], pars[-1])
+    if pars[3]:
+        info += ", showing all elements > {0} and all blocks > {1}".format(
+            pars[0], pars[1])
+        info += " (all = True). "
+    else:
+        info += ", showing all elements with blocks > {0} and of total length > {1} all chords > {1}".format(pars[1], pars[0])
+        info += " (all = False). "
+    info += "Only multiplicons of order > {} are shown.".format(pars[2]-1)
     with open(fname, "w") as f:
-        f.write(get_html(get_circosjs(karyotype, ribbons)))
+        f.write(get_html(get_circosjs(karyotype, ribbons), info))
 
 
 def get_circosjs(karyotype, ribbons):
@@ -163,6 +172,9 @@ def get_circosjs(karyotype, ribbons):
     });
 
     var configuration = {
+        tooltipContent: function (d) {
+            return d.label
+        },
         innerRadius: 500,
         outerRadius: 520,
         cornerRadius: 0,
@@ -207,9 +219,12 @@ def get_circosjs(karyotype, ribbons):
     return js
 
 
-def get_html(js_str):
+def get_html(js_str, info):
     html = "<!DOCTYPE html><html><head><script src='https://cdn.rawgit.com/"
-    html += "nicgirault/circosJS/v2/dist/circos.js'></script></head><body>"
+    html += "nicgirault/circosJS/v2/dist/circos.js'></script>"
+    html += """<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css"> <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    </head><body>"""
+    html += "<div><p>{}</p></div>".format(info)
     html += "<div width='100%'><svg width='1500' height='1500' "
     html += "id='chart'></svg></div>"
     html += "<script>{}</script></body></html>".format(js_str)

@@ -93,3 +93,10 @@ def write_gene_lists(db, genes, genome, path, attr="ID", features=["gene"]):
             f.write("\n".join(lst))
         config["lists"].append("{} {}".format(chr, os.path.abspath(p)))
     return config, genes_data
+
+
+def write_karyotype(gdata, fname):
+    df = gdata.groupby(["chrom"])[["stop", "sp"]].max()
+    df["start"] = 0
+    df.to_csv(fname, sep=",")
+    return os.path.abspath(fname)

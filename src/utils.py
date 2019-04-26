@@ -14,7 +14,7 @@ def default_adhore_conf(**kwargs):
         "table_type": "family",
         "multiple_hypothesis_correction": "FDR",
         "visualizeGHM": "false",
-        "visualizeAlignment": "true"
+        "visualizeAlignment": "false"
     }
     for k, v in kwargs.items():
         if k in default_conf:

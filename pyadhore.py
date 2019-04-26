@@ -23,10 +23,13 @@ import logging
 import os
 import sys
 import coloredlogs
+import subprocess
+import pandas as pd
 from src.orthofinder import *
 from src.gffparser import *
 from src.utils import *
 from src.circos import *
+from src.adhore import *
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -40,6 +43,7 @@ def cli():
 @click.argument('data_frame', nargs=1, type=click.Path(exists=True))
 @click.argument('species', nargs=1)
 @click.argument('gff', nargs=-1, type=click.Path(exists=True))
+@click.option("--run", is_flag=True)
 @click.option("--mcl", is_flag=True)
 @click.option('--features', '-f', default="gene", show_default=True,
     type=str, help='Features to use from gff files for each species,'
@@ -51,8 +55,15 @@ def cli():
     help='Poisson outlier filtering threshold (< 0: no filtering)')
 @click.option('--outdir', '-o', default='py-adhore.out', show_default=True,
     help='output directory')
-def of(data_frame, species, mcl, gff, features, attributes, outlier_filter,
-        outdir):
+@click.option('--gap_size', default=30, show_default=True)
+@click.option('--cluster_gap', default=35, show_default=True)
+@click.option('--q_value', default=0.75, show_default=True)
+@click.option('--prob_cutoff', default=0.01, show_default=True)
+@click.option('--anchor_points', default=3, show_default=True)
+@click.option('--level_2_only', default="false", show_default=True)
+@click.option('--alignment_method', default="gg2", show_default=True)
+def of(data_frame, species, run, mcl, gff, features, attributes, outlier_filter,
+        outdir, **kwargs):
     """
     Orthofinder/MCL to I-ADHoRE 3.0
     """
@@ -86,13 +97,26 @@ def of(data_frame, species, mcl, gff, features, attributes, outlier_filter,
     # write gene lists
     logging.info("Writing gene lists")
     lconf, gdata = gffs_to_genelists(gff, feat, attr, genes, outdir)
-    gdata.to_csv(os.path.join(outdir, "genes_data.csv"))
+    gdfname = os.path.join(outdir, "genes_data.csv")
+    gdata.to_csv(gdfname)
     conf["lists"] = lconf
+
+    # write karyotype
+    logging.info("Writing gene-based karyotype")
+    write_karyotype(gdata, os.path.join(outdir, "karyotype.csv"))
 
     # write configuration file
     logging.info("Writing I-ADHoRe 3.0 configuration file")
+    conf.update(kwargs)
     conf["output_path"] = os.path.abspath(os.path.join(outdir, "i-adhore-out"))
     write_adhore_config(conf, os.path.join(outdir, "adhore.conf"))
+
+    if run:
+        command = ["i-adhore", os.path.join(outdir, "adhore.conf")]
+        logging.info("Running I-ADHoRe [`{}`]".format(" ".join(command)))
+        subprocess.run(command)#, capture_output=True)
+        summarize_adhore(conf["output_path"], gdfname,
+            os.path.join(outdir, "py-adhore.csv"))
 
 
 @cli.command(context_settings={'help_option_names': ['-h', '--help']})
@@ -121,6 +145,7 @@ def cc(segments, genesdata, all, js, minlen_kt, minlen_ch, min_order, outdir):
     seg = segments_filter(seg, min_order)
     gdata = pd.read_csv(genesdata, index_col=0)
     if not js:
+        logging.warning("Using --js is recommended")
         kt = write_karyotype(gdata, os.path.join(outdir, "karyotype.txt"))
         ri = write_ribbons(seg, gdata, os.path.join(outdir, "ribbons.txt"))
         cc = write_circos_conf(kt, ri, os.path.join(outdir, "circos.conf"))
@@ -128,7 +153,12 @@ def cc(segments, genesdata, all, js, minlen_kt, minlen_ch, min_order, outdir):
         kt = karyotype_to_json(gdata, minlen=minlen_kt)
         ri = ribbons_to_json(seg, gdata, minlen=minlen_ch)
         if not all: kt = reduce_karyotype(kt, ri)
-        get_circosjs_doc(kt, ri, os.path.join(outdir, "circos.html"))
+        get_circosjs_doc(kt, ri, os.path.join(outdir, "circos.html"),
+            [minlen_ch, minlen_kt, min_order, all, segments, genesdata])
+
+
+def dp(segments, genesdata, minlen_kt, minlen_ch, min_order, outdir):
+    pass
 
 
 if __name__ == '__main__':
