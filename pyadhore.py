@@ -117,6 +117,10 @@ def of(data_frame, species, run, mcl, gff, features, attributes, outlier_filter,
         subprocess.run(command)#, capture_output=True)
         summarize_adhore(conf["output_path"], gdfname,
             os.path.join(outdir, "py-adhore.csv"))
+        logging.info("These were the parameters for I-ADHoRe: ")
+        for k, v in kwargs.items():
+            print("--{} '{}' ".format(k, v), end="")
+        print()
 
 
 @cli.command(context_settings={'help_option_names': ['-h', '--help']})

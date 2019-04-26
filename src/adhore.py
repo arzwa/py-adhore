@@ -15,4 +15,5 @@ def summarize_adhore(outdir, gdata, fname):
     gd = pd.read_csv(gdata, index_col=0)
     seg["start"] = list(gd.loc[seg["first"]]["start"])
     seg["stop"] = list(gd.loc[seg["last"]]["stop"])
+    seg["length"] = seg["stop"] - seg["start"]
     seg.to_csv(fname)
