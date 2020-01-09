@@ -62,6 +62,7 @@ def cli():
 @click.option('--anchor_points', default=3, show_default=True)
 @click.option('--level_2_only', default="false", show_default=True)
 @click.option('--alignment_method', default="gg2", show_default=True)
+@click.option('--number_of_threads', '-n', default=1, show_default=True)
 def of(data_frame, species, run, mcl, gff, features, attributes, outlier_filter,
         outdir, **kwargs):
     """

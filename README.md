@@ -6,10 +6,11 @@ genomics group](http://bioinformatics.psb.ugent.be/beg/)
 # py-adhore
 
 Utilities for doing and visualizing synteny/co-linearity analyses using
-I-ADHoRe.  This is meant to replace the tools provided by `wgd syn` in the
+I-ADHoRe.  This should eventually replace the tools provided by `wgd syn` in the
 [wgd]( https://github.com/arzwa/wgd/) package. It is mainly a wrapper to enable
-easier usage of I-ADHoRe and to provide the associated visualizations one
-usually desires.
+easier usage of the very fast and sensitive I-ADHoRe program for synteny and co-
+linearity inference in large comparative genomic data sets; and provides the tools
+for associated visualizations one usually desires.
 
 To install, clone the repository, `cd` into it and type `pip install .`. Works
 with python3.
@@ -27,15 +28,15 @@ files used in OrthoFinder, from [PLAZA
 
 To run I-ADHoRe for this data set you can use the following command
 
-``` 
-$ py-adhore of ./og.csv ath,vvi ./ath.gff ./vvi.gff -f gene -a Name --run 
+```
+$ py-adhore of ./og.csv ath,vvi ./ath.gff ./vvi.gff -f gene -a Name -n 4 --run
 ```
 
-Say you only wanted to do a within-genome comparison for *Vitis*, you could
-simply do
+This will use four therads (`-n 4`) for the I-ADHoRe algorithm. Say you only
+wanted to do a within-genome comparison for *Vitis*, you could simply do
 
-``` 
-$ py-adhore of ./og.csv vvi ./vvi.gff -f gene -a Name -o vvi_out --run 
+```
+$ py-adhore of ./og.csv vvi ./vvi.gff -f gene -a Name -o vvi_out -n 4 --run
 ```
 
 You can find more options and instructions using `py-adhore -of --help`.
@@ -60,8 +61,8 @@ We make the following notes:
 One can visualize the results in a circos diagram using Circos or Circos.js as
 follows (example for circos.js):
 
-``` 
-$ py-adhore cc --js py-adhore.out/i-adhore-out/segments.txt ./py-adhore.out/genes_data.csv 
+```
+$ py-adhore cc --js py-adhore.out/i-adhore-out/segments.txt ./py-adhore.out/genes_data.csv
 ```
 
 This will create a directory `py-adhore.out/circos` with a HTMl file in the
@@ -72,8 +73,7 @@ are generated.
 
 If you use this package, please cite this repository and most importantly:
 
-``` 
-Proost, Sebastian, et al. "i-ADHoRe 3.0—fast and sensitive detection of
-genomic homology in extremely large data sets." Nucleic acids research 40.2
-(2011): e11-e11. 
+```
+Proost, Sebastian, et al. "i-ADHoRe 3.0—fast and sensitive detection of genomic homology in extremely large data sets."
+Nucleic acids research 40.2 (2011): e11-e11.
 ```

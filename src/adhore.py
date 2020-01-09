@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 
-# Parse file sproduced by I-ADHoRe
+# Parse files produced by I-ADHoRe
 def summarize_adhore(outdir, gdata, fname):
     """
     Make a one file summary of the I-ADHoRe results. One syntenic block per row
