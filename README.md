@@ -8,12 +8,22 @@ genomics group](http://bioinformatics.psb.ugent.be/beg/)
 Utilities for doing and visualizing synteny/co-linearity analyses using
 I-ADHoRe.  This should eventually replace the tools provided by `wgd syn` in the
 [wgd]( https://github.com/arzwa/wgd/) package. It is mainly a wrapper to enable
-easier usage of the very fast and sensitive I-ADHoRe program for synteny and co-
+easier usage of the very fast and sensitive [I-ADHoRe program](http://bioinformatics.psb.ugent.be/webtools/i-adhore/licensing/) for synteny and co-
 linearity inference in large comparative genomic data sets; and provides the tools
 for associated visualizations one usually desires.
 
-To install, clone the repository, `cd` into it and type `pip install .`. Works
-with python3.
+To install, open a terminal session, clone the repository, `cd` into it and
+type
+
+```
+$ pip install .
+```
+
+Works with python3 (you may need to use `pip3` instead of `pip` in the above
+command; consider using a [virtualenv](https://virtualenv.pypa.io/en/stable/)).
+
+I-ADHoRe can be downloaded [here](http://bioinformatics.psb.ugent.be/webtools/i-adhore/licensing/) (If the page prompts you to go to the updated website, decline
+and go to the bottom of the page to download the package (v3.0)).
 
 ## Usage
 
@@ -32,7 +42,7 @@ To run I-ADHoRe for this data set you can use the following command
 $ py-adhore of ./og.csv ath,vvi ./ath.gff ./vvi.gff -f gene -a Name -n 4 --run
 ```
 
-This will use four therads (`-n 4`) for the I-ADHoRe algorithm. Say you only
+This will use four threads (`-n 4`) for the I-ADHoRe algorithm. Say you only
 wanted to do a within-genome comparison for *Vitis*, you could simply do
 
 ```
