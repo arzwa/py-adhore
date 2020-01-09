@@ -20,6 +20,7 @@ setup(
         'numpy>=1.16',
         'matplotlib>=3.0.2',
         'pandas==0.24.1',
+        'gffutils==0.10.1'
     ],
     entry_points='''
         [console_scripts]

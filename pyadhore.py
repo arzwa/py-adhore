@@ -98,6 +98,10 @@ def of(data_frame, species, run, mcl, gff, features, attributes, outlier_filter,
     logging.info("Writing gene lists")
     lconf, gdata = gffs_to_genelists(gff, feat, attr, genes, outdir)
     gdfname = os.path.join(outdir, "genes_data.csv")
+    if len(gdata.index) == 0:
+        logging.error("No genes found, make sure the --feature and "
+            "--attribute specify the correspondence between gff and families")
+        exit()
     gdata.to_csv(gdfname)
     conf["lists"] = lconf
 
