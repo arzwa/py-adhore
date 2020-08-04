@@ -39,17 +39,23 @@ files used in OrthoFinder, from [PLAZA
 To run I-ADHoRe for this data set you can use the following command
 
 ```
-$ py-adhore of ./og.csv ath,vvi ./ath.gff ./vvi.gff -f gene -a Name -n 4 --run
+$ py-adhore of ./Orthogroups.tsv ath,vvi ./ath.gff ./vvi.gff -f gene -a Name -n 4 --run
 ```
 
 This will use four threads (`-n 4`) for the I-ADHoRe algorithm. Say you only
 wanted to do a within-genome comparison for *Vitis*, you could simply do
 
 ```
-$ py-adhore of ./og.csv vvi ./vvi.gff -f gene -a Name -o vvi_out -n 4 --run
+$ py-adhore of ./Orthogroups.tsv vvi ./vvi.gff -f gene -a Name -o vvi_out -n 4 --run
 ```
 
 You can find more options and instructions using `py-adhore -of --help`.
+
+To get the associated synteny clusters, use:
+
+```
+$ py-adhore cl py-adhore.out/genes_data.csv py-adhore.out/i-adhore-out/anchorpoints.txt
+```
 
 We make the following notes:
 

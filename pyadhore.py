@@ -24,12 +24,11 @@ import os
 import sys
 import coloredlogs
 import subprocess
-import pandas as pd
 from src.orthofinder import *
 from src.gffparser import *
 from src.utils import *
-from src.circos import *
 from src.adhore import *
+from src.circos import *
 
 
 @click.group(context_settings={'help_option_names': ['-h', '--help']})
@@ -68,6 +67,7 @@ def of(data_frame, species, run, mcl, gff, features, attributes, outlier_filter,
     """
     Orthofinder/MCL to I-ADHoRE 3.0
     """
+    import pandas as pd
     species = species.split(",")
     if len(species) != len(gff):
         logging.error("# of species is different from # of gff files")
@@ -144,6 +144,7 @@ def cc(segments, genesdata, all, js, minlen_kt, minlen_ch, min_order, outdir):
     """
     Circos visualization of I-ADHoRe results
     """
+    import pandas as pd
     if not outdir:
         outdir = os.path.join(os.path.dirname(genesdata), "circos")
     try:
@@ -166,9 +167,26 @@ def cc(segments, genesdata, all, js, minlen_kt, minlen_ch, min_order, outdir):
             [minlen_ch, minlen_kt, min_order, all, segments, genesdata])
 
 
-def dp(segments, genesdata, minlen_kt, minlen_ch, min_order, outdir):
-    pass
+@cli.command(context_settings={'help_option_names': ['-h', '--help']})
+@click.argument('genesdata', nargs=1, type=click.Path(exists=True))
+@click.argument('anchorpoints', nargs=1, type=click.Path(exists=True))
+@click.option('--outdir', '-o', default="clusters",
+              type=click.Path(exists=False), show_default=True)
+def cl(genesdata, anchorpoints, outdir):
+    """
+    Get syntenic clusters from the syntenic network.
 
+    Syntenic clusters are defined as connected components in the
+    synteny networs. These are actually the subset of the orthogroups
+    that are anchor pairs.
+    """
+    import pandas as pd
+    import src.network
+    genesdata = pd.read_csv(genesdata, index_col=0)
+    genes, counts = src.network.get_clusters(anchorpoints, genesdata)
+    os.mkdir(outdir)
+    genes.to_csv(os.path.join(outdir, "clusters.tsv"), sep="\t")
+    counts.to_csv(os.path.join(outdir, "profile.csv"), sep=",")
 
 if __name__ == '__main__':
     cli()

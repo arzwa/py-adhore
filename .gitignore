@@ -1,5 +1,6 @@
-
+ENV/
 example/py-adhore.out
+example/clusters
 
 # Created by https://www.gitignore.io/api/venv,python
 # Edit at https://www.gitignore.io/?templates=venv,python

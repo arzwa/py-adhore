@@ -77,13 +77,14 @@ def write_gene_lists(db, genes, genome, path, attr="ID", features=["gene"]):
     for f in features:
         for g in db.features_of_type(f, order_by='start'):
             g_id = g.attributes[attr][0]
-            if g_id not in genes:
+            if g_id not in genes.keys():
                 logging.debug("Feature {} not found in families".format(g_id))
                 c2 += 1
                 continue
             c1 += 1
-            genes_data[g_id] = {"feat": f, "chrom": g.chrom, "sp": genome,
-                "strand": g.strand, "start": g.start, "stop": g.stop}
+            genes_data[g_id] = {"family": genes[g_id], "feat": f, "chrom": g.chrom,
+                                "sp": genome, "strand": g.strand, "start": g.start,
+                                "stop": g.stop}
             genomic_elements[g.chrom].append(g_id + g.strand)
     c = c1 + c2
     logging.info("{:.2f}% of genes not found in families".format(100*c2/c))

@@ -50,27 +50,29 @@ def write_families_from_df(df, fname):
     Write families file for I-ADHoRe based on a data frame where every row
     consists of one family.
     """
-    genes = []
+    genes = {}
     with open(fname, "w") as f:
         for row in df.index:
             for x in df.loc[row].apply(lambda x : x.split(", ")):
                 gs = [y for y in x if y != ""]
                 strs = ["{}\t{}\n".format(y, row) for y in gs]
                 f.write("".join(strs))
-                genes += gs
-    return os.path.abspath(fname), set(genes)
+                for g in gs:
+                    genes[g] = row
+    return os.path.abspath(fname), genes
 
 
 def write_families_from_mcl(df, fname):
-    genes = []
+    genes = {}
     with open(fname, "w") as o:
         with open(df, "r") as f:
             for i, l in enumerate(f.readlines()):
                 gs = l.strip().split()
                 strs = ["{}\t{}\n".format(g, i) for g in gs]
                 o.write("".join(strs))
-                genes += gs
-    return os.path.abspath(fname), set(genes)
+                for g in gs:
+                    genes[g] = row
+    return os.path.abspath(fname), genes
 
 
 def unique_prefix(strs, prefixes):
