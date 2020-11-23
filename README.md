@@ -1,6 +1,6 @@
 Copyright (C) 2020 Arthur Zwaenepoel
 
-This repository is not actively maintained, use at own risk
+*This repository is not actively maintained, use at own risk*
 
 # py-adhore
 
