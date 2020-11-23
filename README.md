@@ -1,7 +1,6 @@
 Copyright (C) 2020 Arthur Zwaenepoel
 
-VIB/UGent center for plant systems biology - [Bioinformatics & evolutionary
-genomics group](http://bioinformatics.psb.ugent.be/beg/)
+This repository is not actively maintained, use at own risk
 
 # py-adhore
 
@@ -71,6 +70,10 @@ We make the following notes:
    must have species IDs as prefixes
 4. One can choose to just generate the configuration files for I-ADHoRe without
    running it, simply omit the `--run` flag.
+5. Note that if you're using OrthoFinder, you may want to add the singleton genes
+   in `Orthogroups.UnassignedGenes.tsv` to the `Orthogroups.tsv` file before
+   using with py-adhore, otherwise you will ignore all genes that are in 
+   singleton gene families.
 
 ### Visualization
 
@@ -87,7 +90,7 @@ are generated.
 
 ## Citation
 
-If you use this package, please cite this repository and most importantly:
+If you use this code, please do not forget to cite
 
 ```
 Proost, Sebastian, et al. "i-ADHoRe 3.0—fast and sensitive detection of genomic homology in extremely large data sets."
